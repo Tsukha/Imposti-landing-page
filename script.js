@@ -2,7 +2,6 @@
   const langButtons = Array.from(document.querySelectorAll("[data-lang-toggle]"));
   if (!langButtons.length) return;
 
-  const STORAGE_KEY = "imposti_lang";
   const defaultLang = "ka";
 
   const enTranslations = {
@@ -16,7 +15,7 @@
     years: "Since",
     projects: "Projects",
     contact: "Contact Us",
-    location: "I.Chavchavadze Ave 39, 0160, Tbilisi, Georgia",
+    location: "I.Chavchavadze Ave 39, 0179, Tbilisi, Georgia",
     copyright: "\u00A9 2026 IMPOSTI. All Rights Reserved."
   };
 
@@ -43,6 +42,23 @@
   const translations = {
     ka: kaTranslations,
     en: enTranslations
+  };
+
+  const getLanguageFromUrl = () => {
+    const params = new URLSearchParams(window.location.search);
+    const queryLang = (params.get("lang") || "").toLowerCase();
+
+    if (["en", "eng", "english"].includes(queryLang)) return "en";
+    if (["ka", "geo", "georgian"].includes(queryLang)) return "ka";
+
+    return defaultLang;
+  };
+
+  const setLanguageInUrl = (lang) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("lang", lang);
+    // Preserve current page without reload while making language link shareable.
+    window.history.replaceState({}, "", url.toString());
   };
 
   const applyLanguage = (lang) => {
@@ -74,14 +90,15 @@
       btn.classList.toggle("is-active", isActive);
       btn.setAttribute("aria-pressed", String(isActive));
     });
-
-    localStorage.setItem(STORAGE_KEY, activeLang);
   };
 
-  applyLanguage(localStorage.getItem(STORAGE_KEY) || defaultLang);
+  applyLanguage(getLanguageFromUrl());
 
   langButtons.forEach((btn) => {
-    btn.addEventListener("click", () => applyLanguage(btn.dataset.langToggle));
+    btn.addEventListener("click", () => {
+      const nextLang = btn.dataset.langToggle;
+      applyLanguage(nextLang);
+      setLanguageInUrl(nextLang);
+    });
   });
 });
-
